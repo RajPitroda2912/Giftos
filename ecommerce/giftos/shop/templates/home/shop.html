@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+  {% block title %}
+    Shop
+  {% endblock title %}
+{% block content %}
+
+  <!-- shop section -->
+<section class="shop_section layout_padding">
+  <div class="container">
+    <div class="heading_container heading_center">
+      <h2>
+        Latest Products
+      </h2>
+    </div>
+    <div class="row">
+      {% for products in product %}
+        <div class="column">
+          <div class="card" style="width: 18rem;">
+            <img src="{{ products.image }}" class="card-img-top">
+            <div class="card-body">
+              <h5 class="card-title">{{ products.name }}</h5>
+              <p class="card-text">₹{{ products.price }}</p>
+              <a href="#" class="btn btn-primary">Add Cart</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+  <!-- end shop section -->
+
+{% endblock %}
