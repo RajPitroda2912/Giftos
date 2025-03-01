@@ -8,7 +8,11 @@ from .models import *
 
 # Create your views here.
 def home(request):
-    return render(request,'home/index.html')
+    product =Product.objects.all()[:10:3]
+    data = {
+        'product':product
+    }
+    return render(request,'home/index.html',data)
 
 def contact(request):
     if request.method=='POST':
@@ -42,17 +46,20 @@ def why(request):
 
 def Login(request):
     if request.method=='POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        User = authenticate(email=email,password=password)
-        if User is not None:
-            login(request,User)
-            return redirect('/')
-        else:
-            messages.error(request,"Email and Password is incorrect!")
+        form  = ReCaptcha(request.POST)
+        if form.is_valid():
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            User = authenticate(email=email,password=password)
+            if User is not None:
+                login(request,User)
+                return redirect('/')
+            else:
+                messages.error(request,"Email and Password is incorrect!")
 
-    context={}      
-    return render(request,'login.html',context)
+    else:
+        form = ReCaptcha()    
+    return render(request,'login.html',{'form':form})
 
 def signup(request):
     if request.method == 'POST':
