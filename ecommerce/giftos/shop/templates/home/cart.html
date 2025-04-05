@@ -1,0 +1,95 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+        <title>Your Cart</title>
+    </head>
+    <body>
+        <div class="card">
+            {% if cart_items %}
+            <div class="row">
+                <div class="col-md-8 cart"> 
+                    <div class="title">
+                        <div class="row">
+                            <div class="col"><h4><b>Shopping Cart</b></h4></div>
+                            
+                            <div class="col align-self-center text-right text-muted">{{ cart_items|length }} items</div>
+                        </div>
+                    </div>
+                        {% for item in cart_items %}
+                            <div class="row border-top border-bottom">
+                                <div class="row main align-items-center">
+                                    <div class="col-2"><img class="img-fluid" src="{{ item.product.image }}" alt="{{ item.product.name }}"></div>
+                                    <div class="col">
+                                        <div class="row text-muted">{{ item.product.category }}</div>
+                                        <div class="row">{{ item.product.name }}</div>
+                                    </div>
+                                    <div class="col">
+                                        {% if item.id %}
+                                            <a href="{% url 'shop:decrement' item.id %}" class="quantity-decrease">-</a>
+                                        {% endif %}
+                                        <span class="border">{{ item.quantity }}</span>
+                                        {% if item.id %}
+                                            <a href="{% url 'shop:increment' item.id %}" class="quantity-increase">+</a>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col">&#8377; {{ item.product.price }}
+                                    {% if item.id %}
+                                        <a href="{% url 'shop:removecart' item.id %}" onclick="return confirm('Are you sure you want to remove this item from the cart?');">Remove</a>
+                                    {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    
+                    <div class="back-to-shop"><a href="{% url 'shop:shop' %}">&leftarrow;Back to shop</a></div>
+                </div>
+                <div class="col-md-4 summary">
+                    <div><h5><b>Summary</b></h5></div>
+                    <hr>
+                    <div class="row">
+                        <div class="col" style="padding-left:0;">ITEMS {{ cart_items|length }}</div>
+                        <div class="col text-right">&#8377; {{ total_price }}</div>
+                    </div>
+                    <!-- <form>
+                        <p>SHIPPING</p>
+                        <option class="text">Free-Delivery</option>
+                        <p>GIVE CODE</p>
+                        <input id="code" placeholder="Enter your code">
+                    </form> -->
+                    <div class="row" style="border-top: 1px solid rgba(0,0,0,.1); padding: 2vh 0;">
+                        <div class="col">TOTAL PRICE</div>
+                        <div class="col text-right">&#8377; {{ total_price }}</div>
+                    </div>
+                    <a href="{% url 'shop:checkout' %}" class="btn btn-primary">Check Out</a>
+                            {% else %}
+                                <div class="row">
+                                    <div class="col text-center">
+                                        <img src="https://www.vinsolutions.com/wp-content/uploads/sites/2/vinsolutions/media/Vin-Images/news-blog/Empty_Shopping_Cart_blog.jpg" alt="Empty Cart" class="img-fluid" style="padding: 50px; height: 250px; width: 400px;">
+                                        <h3>Your cart is empty!</h3>
+                                        <h6>Add items to it now</h6>
+                                        <div class="back-to-shop mt-3">
+                                            <a href="{% url 'shop:shop' %}" class="btn btn-sm">Back to shop</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>   
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    </body>
+</html>

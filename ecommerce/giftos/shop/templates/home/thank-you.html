@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+  Shop
+{% endblock title %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Thank You | Order Completed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/thanks.css' %}" />
+</head>
+<body>
+  <div class="thank-you-wrapper">
+    <div class="thank-you-box">
+      <div class="checkmark-circle">
+        <span class="checkmark">&#10004;</span>
+      </div>
+      <h1>Thank You for Your Order!</h1>
+      <p class="desc">Your order has been placed successfully.<br>We’ve sent a confirmation to your email.</p>
+      <p class="order-id">Order ID: <strong>{{ order_id }}</strong></p>
+      <a href="/" class="btn">Continue Shopping</a>
+    </div>
+  </div>    
+</body>
+</html>
+
+{% endblock %}

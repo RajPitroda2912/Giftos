@@ -23,4 +23,4 @@ class RegisterUser(UserCreationForm):
         return self.name 
     
 class ReCaptcha(forms.Form):
-    captcha = ReCaptchaField(required=True, label='Captcha', widget=ReCaptchaV2Checkbox)
+    captcha = ReCaptchaField(required=True,widget=ReCaptchaV2Checkbox)

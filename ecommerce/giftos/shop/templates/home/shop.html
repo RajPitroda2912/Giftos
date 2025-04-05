@@ -1,35 +1,85 @@
 {% extends "base.html" %}
 {% load static %}
-  {% block title %}
-    Shop
-  {% endblock title %}
+{% block title %}
+  Shop
+{% endblock title %}
 {% block content %}
 
-  <!-- shop section -->
-<section class="shop_section layout_padding">
-  <div class="container">
-    <div class="heading_container heading_center">
+<!-- shop section -->
+ <div class="row">
+  <div class="col-md-2">
+    <div class="heading_container heading_center" style="margin-top: 90px;">
       <h2>
-        Latest Products
+        Filter
       </h2>
+      {% if request.GET %}
+        <a href="{% url 'shop:shop' %}" class="btn btn-secondary" style="margin-top: 20px;">Clear Filters</a>
+      {% endif %}
     </div>
-    <div class="row">
-      {% for products in product %}
-        <div class="column">
-          <div class="card" style="width: 18rem;">
-            <img src="{{ products.image }}" class="card-img-top">
-            <div class="card-body">
-              <h5 class="card-title">{{ products.name }}</h5>
-              <p class="card-text">₹{{ products.price }}</p>
-              <a href="#" class="btn btn-primary">Add Cart</a>
-            </div>
-          </div>
+    <form action="" method="GET">
+      <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <h2 style="font-size:20px">Category</h2>
+        {% for cate in category %}
+        <div class="form-check" style="margin-top: 20px;">
+          <input class="form-check-input" type="checkbox" name="category" value="{{ cate.id }}" id="flexCheckDefault{{ cate.id }}" {% if cate.id|stringformat:"s" in request.GET.category %}checked{% endif %}>
+          <label class="form-check-label" for="flexCheckDefault{{ cate.id }}">
+            {{ cate.name }}
+          </label>
         </div>
-      {% endfor %}
-    </div>
+        {% endfor %}
+      </div>
+      <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+        <h2 style="font-size:20px; margin-top: 10px;">Price</h2>
+        <div class="form-group">
+          <label for="minPrice">Min Price</label>
+          <select class="form-control" id="minPrice" name="min_price">
+            <option value="0" {% if request.GET.min_price == "0" %}selected{% endif %}>Min</option>
+            <option value="1000" {% if request.GET.min_price == "1000" %}selected{% endif %}>1000</option>
+            <option value="2000" {% if request.GET.min_price == "2000" %}selected{% endif %}>2000</option>
+            <option value="5000" {% if request.GET.min_price == "5000" %}selected{% endif %}>5000</option>
+            <option value="10000" {% if request.GET.min_price == "10000" %}selected{% endif %}>10000</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="maxPrice">Max Price</label>
+          <select class="form-control" id="maxPrice" name="max_price">
+            <option value="" {% if request.GET.max_price == "" %}selected{% endif %}>20000+</option>
+            <option value="1000" {% if request.GET.max_price == "1000" %}selected{% endif %}>1000</option>
+            <option value="2000" {% if request.GET.max_price == "2000" %}selected{% endif %}>2000</option>
+            <option value="5000" {% if request.GET.max_price == "5000" %}selected{% endif %}>5000</option>
+            <option value="10000" {% if request.GET.max_price == "10000" %}selected{% endif %}>10000</option>
+          </select>   
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Apply Filters</button>
+    </form>
   </div>
-</section>
+  <div class="col-md-10">
+    <section class="shop_section layout_padding">
+      <div class="container">
+        <div class="heading_container heading_center">
+          <h2>
+            Latest Products
+          </h2>
+        </div>
+        <div class="row">
+          {% for products in product %}
+            <div class="col-md-4">
+              <div class="card" style="width: 18rem;">
+                <img src="{{ products.image }}" class="card-img-top">
+                <div class="card-body">
+                  <h5 class="card-title">{{ products.name }}</h5>
+                  <p class="card-text">₹{{ products.price }}</p>
+                  <a href="{% url 'shop:addcart' products.id %}" class="btn btn-sm btn-primary">Add Cart</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
 
-  <!-- end shop section -->
-
+<!-- end shop section -->
 {% endblock %}

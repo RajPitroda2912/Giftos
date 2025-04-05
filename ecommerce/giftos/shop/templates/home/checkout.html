@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/ckeckout.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js " integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n " crossorigin="anonymous "></script>
+    <title>Checkout</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center my-5">Checkout</h1>
+        <div class="tab-content">
+            <div class="tab-pane active" id="step1">
+                <div class="row text-center">
+                    <div class="col-sm col-12">
+                        <div class="alert alert-primary bg-alert-bg" role="alert">
+                            Please enter your order information
+                        </div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="accordion" id="accordionExample">
+                                        <div class="card border-0">
+                                            <div class="card-header d-flex justify-content-between" id="headingOne">
+                                                <h2 class="mb-0">
+                                                    <button id="turnbf" class="btn btn-link d-flex turnaf clps" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                        <p class="clps-btn-style">Show the cart detail</p>
+                                                        <span class="mx-1"><i class="far fa-chevron-double-down"></i></span>
+                                                    </button>
+                                                </h2>
+                                                <span class="my-2 text-danger h4">&#8377; {{ total_price }}</span>
+                                            </div>
+                                            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                                <div class="card-body p-0">
+                                                    <div>
+                                                        <table class="table table-sm">
+                                                            <thead>
+                                                                <tr class="ml-3">
+                                                                    <th></th>
+                                                                    <th></th>
+                                                                    <th class="text-left" width="40%">Product</th>
+                                                                    <th class="text-center" width="50%">Quantity</th>
+                                                                    <th class="text-right" width = "60%">Price</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for item in cart_items %}
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <!-- <a href="#delete" data-toggle="modal" data-title="Delete your product ?">
+                                                                            <i class="fal fa-trash-alt"></i>
+                                                                        </a> -->
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="rounded">
+                                                                            <img src="{{ item.product.image }}" alt="">
+                                                                        </div>
+                                                                    </td>
+                                                                    <td class="align-middle text-left">{{ item.product.name }}</td>
+                                                                    <td class="align-middle text-center">{{ item.quantity }}</td>
+                                                                    <td class="align-middle text-right">&#8377; {{ item.product.price }}</td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                                <tr>
+                                                                    <td colspan="4" class="align-middle text-right">Total</td>
+                                                                    <td class="align-middle text-right">&#8377; {{ total_price }}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="alert alert-secondary border-0 h4 text-center bg-alert rounded-0" role="alert">
+                                                Shipping Address
+                                            </div>
+                                            <form method="post" class="needs-validation">
+                                                {% csrf_token %}
+                                                <div class="form-row">
+                                                    <div class="col-md-4 mb-3">
+                                                        <label for="name">Name</label>
+                                                        <input type="text" class="form-control space" name="name" value="{{ user_details.name }}" id="name" required>
+                                                        <input type="text" class="form-control space" name="order_id" value="{{ order_id }}" id="order_id" hidden/>
+                                                        <input type="text" class="form-control space" name="payment" value="{{ payment }}" id="payment" hidden/>
+                                                    </div>
+                                                    <div class="col-md-4 mb-3">
+                                                        <label for="email">Email</label>
+                                                        <input type="text" class="form-control space" name="email" value="{{ user_details.email }}" id="email" required>
+                                                    </div>
+                                                    <div class="col-md-4 mb-3">
+                                                        <label for="phone">Mobile Number</label>
+                                                        <input type="tel" class="form-control space" name="phone" value="{{ user_details.phone }}" id="phone" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-row">
+                                                    <div class="col-md-4 mb-3">
+                                                        <label for="locality">Locality</label>
+                                                        <input type="text" class="form-control space" name="locality" id="locality">
+                                                    </div>
+                                                    <div class="col-md-4 mb-3">
+                                                        <label for="city">City</label>
+                                                        <input type="text" class="form-control space" name="city" id="city" required>
+                                                    </div>
+                                                    <div class="col-md-4 mb-3">
+                                                        <label for="pim">Pincode</label>
+                                                        <input type="text" class="form-control space" name="pin" id="pin" required>
+                                                    </div>
+                                                    <div class="col-md-12 mb-3">
+                                                        <label for="address">Address</label>
+                                                        <input type="text" class="form-control space" name="address" value="{{ user_details.address }}" id="address" required>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-center">
+                                                    <button type="submit" class="btn btn-primary">Save Address</button>
+                                                </div>
+                                                <div class="d-flex justify-content-center" style="padding-top: 10px;">
+                                                    <a href="{% url 'shop:thankyou' %}" id="rzp-button1" class="btn btn-primary">Continue</a>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <script src="{% static 'js/checkout.js' %}"></script> -->
+    <form action="{% url 'shop:thankyou' %}" method="post">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+    var options = {
+        "key": "rzp_test_GxifgXgAGIAXPo", 
+        "amount": "{{amount}}", 
+        "currency": "INR",
+        "name": "Acme Corp",
+        "description": "Test Transaction",
+        "image": "https://example.com/your_logo",
+        "order_id": "{{order_id}}", 
+        "callback_url": "http://127.0.0.1:5000/cart/checkout/thankyou",
+        "prefill": { 
+            "name": "Gaurav Kumar",
+            "email": "gaurav.kumar@example.com",
+            "contact": "9000090000" 
+        },
+        "notes": {
+            "address": "Razorpay Corporate Office"
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    document.getElementById('rzp-button1').onclick = function(e){
+        rzp1.open();
+        e.preventDefault();
+    }
+    </script>
+    </form>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js " integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo " crossorigin="anonymous "></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js " integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6 " crossorigin="anonymous "></script>
+</body>
+
+</html>
