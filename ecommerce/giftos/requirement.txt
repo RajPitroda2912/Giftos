@@ -11,6 +11,7 @@ idna==3.10
 pillow==11.1.0
 razorpay==1.4.2
 requests==2.32.3
+setuptools==78.1.0
 sqlparse==0.5.3
 typing_extensions==4.12.2
 urllib3==2.3.0
