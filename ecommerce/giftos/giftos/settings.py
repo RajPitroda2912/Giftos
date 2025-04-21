@@ -32,6 +32,8 @@ LOGOUT_REDIRECT_URL = '/'
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     'django_recaptcha',
     'ckeditor',
     'ckeditor_uploader',
+    'django_celery_beat',
 
 ]
 
@@ -76,6 +79,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'giftos.wsgi.application'
+ASGI_APPLICATION = 'giftos.asgi.application'
 
 
 # Database
@@ -129,7 +133,7 @@ RECAPTCHA_PRIVATE_KEY = '6Lc8_uIqAAAAAGIho2OBL-eoUq5V_TVTZ6Vd6usk'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -166,4 +170,14 @@ CKEDITOR_CONFIGS = {
             ]),
             'uploadUrl': '/ckeditor/upload/',
         },
+}
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
 }

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+  {% block title %}
+    Why
+  {% endblock title %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/order.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <title>My Orders</title>
+</head>
+<body>
+    <div class="container-fluid my-5  d-flex  justify-content-center">
+        <div class="card card-1">
+            <div class="card-header bg-white">
+                <div class="media flex-sm-row flex-column-reverse justify-content-between  ">
+                    <div class="col my-auto"> <h4 class="mb-0">Thanks for your Order,<span class="change-color">{{request.user.name}}</span> !</h4> </div>
+                    <div class="col-auto text-center  my-auto pl-0 pt-sm-4"> <img class="img-fluid my-auto align-items-center mb-0 pt-3"  src="https://media.istockphoto.com/id/1136598403/vector/simple-logo-illustration-for-gift-shop-logo-design-emblem-design-concept.jpg?s=612x612&w=0&k=20&c=2pGNrfIFXvg-EUtT8MU6zU852b52QCBA7X-EScer6Cc=" width="115" height="115"></div>
+                </div>
+            </div>
+        
+            {% for orders in order %}
+            <div class="card-body">
+                <div class="row justify-content-between mb-3">
+                    <div class="col-auto"> <h6 class="color-1 mb-0 change-color">Receipt</h6> </div>
+                    <div class="col-auto  "> <small>Receipt Voucher : {{orders.payment_id}}</small> </div>
+                </div>
+                {% for order_item in order_details %}
+                <div class="row">
+                    <div class="col">
+                        <div class="card card-2">
+                            <div class="card-body">
+                                <div class="media">
+                                    <div class="sq align-self-center "> <img class="img-fluid  my-auto align-self-center mr-2 mr-md-4 pl-0 p-0 m-0" src="{{order_item.image}}" width="135" height="135" /> </div>
+                                    <div class="media-body my-auto text-right">
+                                        <div class="row  my-auto flex-column flex-md-row">
+                                            <div class="col my-auto"> <h6 class="mb-0"> {{order_item.product}}</h6>  </div>
+                                            <div class="col my-auto"> <small>Quantity : {{order_item.quantity}}</small></div>
+                                            <div class="col my-auto"><h6 class="mb-0">&#8377;{{order_item.price}}</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr class="my-3 ">
+                                <div class="row">
+                                    <div class="col-md-3 mb-3"> <small> Track Order <span><i class="ml-2 fa fa-refresh" aria-hidden="true"></i></span></small> </div>
+                                    <div class="col mt-auto">
+                                        <div class="progress my-auto">
+                                            <div class="progress-bar progress-bar rounded" 
+                                                 style="width: {% if order_item.status == 'On the Way' %}50{% elif order_item.status == 'Delivered' %}100{% else %}10{% endif %}%" 
+                                                 role="progressbar" 
+                                                 aria-valuenow="{% if order_item.status == 'On the Way' %}50{% elif order_item.status == 'Delivered' %}100{% else %}10{% endif %}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <div class="media row justify-content-between">
+                                            <div class="col-auto text-right"><span><small class="text-right mr-sm-2">Accepted</small><i class="fa fa-circle {% if order_item.status == 'on the way' or order_item.status == 'delivered' %}active{% endif %}"></i></span></div>
+                                            <div class="flex-col"><span><small class="text-right mr-sm-2">On the Way</small><i class="fa fa-circle {% if order_item.status == 'delivered' %}active{% endif %}"></i></span></div>
+                                            <div class="col-auto flex-col-auto"><small class="text-right mr-sm-2">Delivered</small><span><i class="fa fa-circle {% if order_item.status == 'delivered' %}active{% endif %}"></i></span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="row mt-4">
+                    <div class="col">
+                        <div class="row justify-content-between">
+                            <div class="col-auto"><p class="mb-1 text-dark"><b>Order Details</b></p></div>
+                            <div class="flex-sm-col text-right col"> <p class="mb-1"><b>Total</b></p> </div>
+                            <div class="flex-sm-col col-auto"> <p class="mb-1">&#8377;{{orders.amount}}</p> </div>
+                        </div>
+                        <div class="row justify-content-between">
+                            <div class="flex-sm-col text-right col"><p class="mb-1"> <b>Discount</b></p> </div>
+                            <div class="flex-sm-col col-auto"><p class="mb-1">&#8377;0</p></div>
+                        </div>
+                        <div class="row justify-content-between">
+                            <div class="flex-sm-col text-right col"><p class="mb-1"><b>Delivery Charges</b></p></div>
+                            <div class="flex-sm-col col-auto"><p class="mb-1">Free</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row invoice" style="margin-top: 0px;">
+                    <div class="col"><p class="inv">Order Date : {{orders.created_at}}</p><p class="inv">Order ID:{{orders.payment_id}}</p></div>
+                </div>
+            </div>            
+            <div class="card-footer">
+                <div class="jumbotron-fluid">   
+                    <div class="row justify-content-between ">
+                        <div class="col-sm-auto col-auto my-auto"><img class="img-fluid my-auto align-self-center " src="https://media.istockphoto.com/id/1136598403/vector/simple-logo-illustration-for-gift-shop-logo-design-emblem-design-concept.jpg?s=612x612&w=0&k=20&c=2pGNrfIFXvg-EUtT8MU6zU852b52QCBA7X-EScer6Cc=" width="115" height="115"></div>
+                        <div class="col-auto my-auto "><h2 class="mb-0 font-weight-bold">TOTAL PAID</h2></div>
+                        <div class="col-auto my-auto ml-auto"><h1 class="display-3 ">&#8377; {{orders.amount}}</h1></div>
+                    </div>
+            {% endfor %}
+                    <div class="row mb-3 mt-3 mt-md-0">
+                        <div class="col-auto border-line"> <small class="text-dark">PAN:AA02hDW7E</small></div>
+                        <div class="col-auto border-line"> <small class="text-dark">CIN:UMMC20PTC </small></div>
+                        <div class="col-auto "><small class="text-dark">GSTN:268FD07EXX </small> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</body>
+</html>
+{% endblock content %}

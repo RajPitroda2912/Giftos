@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 from ckeditor.fields import RichTextField
+from django.utils import timezone
+from django.utils.translation import gettext as _
 
 # Category Model
 class Category(models.Model):
@@ -15,7 +17,7 @@ class Product(models.Model):
     name = models.CharField(max_length=200)
     price = models.IntegerField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    image = models.CharField(max_length=1500)
+    image = models.URLField(max_length=1500)
 
     def __str__(self):
         return self.name
@@ -46,12 +48,15 @@ class UserManager(BaseUserManager):
 
 class user(AbstractUser):
     username = models.CharField(max_length=100,null=True,blank=True)
-    name = models.CharField(max_length=100, unique=True)    
+    name = models.CharField(_("Username"), max_length=100, unique=True)    
     email = models.EmailField(verbose_name='email', max_length=255, unique=True, null=True)
     phone = models.CharField(max_length=10,blank=True,null=True)
     address = models.CharField(max_length=250,blank=True,null=True)
     password = models.CharField(max_length=100)
     password1 = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name',]  
@@ -95,17 +100,18 @@ class CartItem(models.Model):
 
 class Order(models.Model):
     user = models.ForeignKey(user,on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    phone = models.CharField(max_length=10)
+    name = models.CharField(max_length=100,null=True,blank=True)
+    email = models.EmailField(null=True,blank=True)
+    phone = models.CharField(max_length=10,null=True,blank=True)
     locality = models.CharField(max_length=100,null=True,blank=True)
-    city = models.CharField(max_length=100)
-    pincode = models.CharField(max_length=6)
-    address = models.TextField()
-    amount = models.CharField(max_length=50)
+    city = models.CharField(max_length=100,null=True,blank=True)
+    pincode = models.CharField(max_length=6,null=True,blank=True)
+    address = models.TextField(null=True,blank=True)
+    amount = models.CharField(max_length=50,null=True,blank=True)
     payment_id = models.CharField(max_length=300,null=True,blank=True)
     paid = models.BooleanField(default=False,null=True)
-    date = models.DateField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -119,13 +125,24 @@ STATUS_CHOICE = (
 
 )
 class OrderDetails(models.Model):
-    order = models.ForeignKey(Order,on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_details')
     product = models.CharField(max_length=250)
-    image = models.ImageField(upload_to="static/images",null=True,blank=True)
+    image = models.URLField(max_length=1000, null=True, blank=True)
     quantity = models.CharField(max_length=20)
     price = models.CharField(max_length=100)
     total = models.CharField(max_length=100)
-    status = models.CharField(max_length=50,default="Pending",choices=STATUS_CHOICE)
+    status = models.CharField(max_length=50, default="Pending", choices=STATUS_CHOICE)
 
     def __str__(self):
-        return self.order.user.name
+        return f"Order by {self.order.user.name} - Product: {self.product}"
+
+
+class AdminNotification(models.Model):
+    message = models.TextField()
+    users = models.ManyToManyField(user, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    is_read = models.BooleanField(default=False)
+    notification_type = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.message

@@ -15,9 +15,11 @@ client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID,settings.RAZORPAY_KEY_SE
 def home(request):
     product =Product.objects.all()[:10:3]
     slider = Slider.objects.all()
+    notification = AdminNotification.objects.all().order_by('-created_at')
     data = {
         'slider':slider,
-        'product':product
+        'product':product,
+        'notification' : notification
     }
     return render(request,'home/index.html',data)
 
@@ -94,9 +96,11 @@ def Login(request):
             User = authenticate(email=email,password=password)
             if User is not None:
                 login(request,User)
+                messages.success(request,"User Login Successfully!")
                 return redirect('/')
             else:
-                messages.error(request,"Email and Password is incorrect!")
+                # messages.error(request,"Email and Password is incorrect!")
+                pass
 
     else:
         form = ReCaptcha()    
@@ -116,18 +120,25 @@ def signup(request):
 # ------------- Logout Func ---------------
 def Logout(request):
     logout(request)
+    messages.success(request,"User Logout Successfully!")
     return redirect('/')
 
 # ------------- Showing Cart  ---------------
 def viewCart(request):
     if request.user.is_authenticated:
-        cart, created  = Cart.objects.get_or_create(user=request.user)
         # User is logged in, retrieve the cart from the database
-        cart = get_object_or_404(Cart, user=request.user)
+        cart, created = Cart.objects.get_or_create(user=request.user)
         cart_items = CartItem.objects.filter(cart=cart)
 
-        if created:
-            pass
+        # Merge session cart into user cart
+        session_cart = request.session.get('cart', [])
+        for item in session_cart:
+            product = get_object_or_404(Product, id=item['product_id'])
+            cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+            if not created:
+                cart_item.quantity += item['quantity']
+                cart_item.save()
+        request.session['cart'] = []  # Clear session cart after merging
     else:
         # User is not logged in, retrieve cart items from the session
         cart_items = request.session.get('cart', [])
@@ -140,11 +151,10 @@ def viewCart(request):
             for item in cart_items
         ]
     
-    # Calculate total price for authenticated users
+    # Calculate total price
     if request.user.is_authenticated:
         total_price = sum(item.product.price * item.quantity for item in cart_items)
     else:
-        # For unauthenticated users, we need to calculate the total price based on session data
         total_price = sum(item['product'].price * item['quantity'] for item in cart_items)
 
     context = {
@@ -163,38 +173,35 @@ def addcart(request, product_id):
         cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
         
         if not created:
-            # If the item already exists in the cart, increase the quantity
             cart_item.quantity += 1
             cart_item.save()
-        else:
-            pass
     else:
         # User is not logged in, use the session cart
         cart = request.session.get('cart', [])
-        
-        # Ensure cart is a list
         if not isinstance(cart, list):
-            cart = []  # Reset to an empty list if it's not a list
+            cart = []
 
-        # Check if the product is already in the session cart
         for i, item in enumerate(cart):
             if item.get('product_id') == product_id:
                 cart[i]['quantity'] += 1
                 break
         else:
-            # If the product is not in the cart, add it
             cart.append({'product_id': product_id, 'quantity': 1})
         
-        # Save the updated cart back to the session
         request.session['cart'] = cart
-    return redirect('shop:shop')
+    return redirect('shop:cart')
 
 
 # ------------- Removeing cart ---------------
 
 def removecart(request, item_id):
-    cart_item = CartItem.objects.get(id=item_id)
-    cart_item.delete()
+    if request.user.is_authenticated:
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+        cart_item.delete()
+    else:
+        cart = request.session.get('cart', [])
+        cart = [item for item in cart if item['product_id'] != item_id]
+        request.session['cart'] = cart
     return redirect('shop:cart')
 
 def increment(request, item_id):
@@ -233,7 +240,19 @@ def decrement(request, item_id):
 
 @login_required(login_url='shop:login')
 def checkout(request):
-    
+
+    # Merge session cart into user cart after login
+    session_cart = request.session.get('cart', [])
+    if session_cart:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        for item in session_cart:
+            product = get_object_or_404(Product, id=item['product_id'])
+            cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+            if not created:
+                cart_item.quantity += item['quantity']
+                cart_item.save()
+        request.session['cart'] = []  # Clear session cart after merging
+
     user = request.user
     user_details = {
         'name': user.name,
@@ -255,6 +274,8 @@ def checkout(request):
         "payment_capture": "1"
     })
     order_id = payment['id']
+
+    orders = None  
 
     if request.method == "POST":
         name = request.POST.get('name')
@@ -280,9 +301,6 @@ def checkout(request):
                 payment_id=order_id
             )
             orders.save()
-            messages.success(request, "Address add successfully")
-        else:
-            messages.error(request, "Error saving address. Please fill all fields.")
 
         for i in cart_items:
             item = OrderDetails(
@@ -291,9 +309,10 @@ def checkout(request):
                 image = i.product.image,
                 quantity = i.quantity,
                 price = i.product.price,
-                total = i.quantity * i.product.price
+                total = i.quantity * i.product.price,
+                status = 'Accepted'
             )
-            item.save()
+            item.save()    
 
     context = {
         'user_details': user_details,
@@ -301,9 +320,11 @@ def checkout(request):
         'total_price': total_price,
         'order_id': order_id,
         'payment': payment,
-        'amount' : amount
+        'amount' : amount,
+        'order' : orders
     }
     return render(request, 'home/checkout.html', context)
+
 
 @csrf_exempt
 def thankyou(request):
@@ -318,8 +339,11 @@ def thankyou(request):
         user = Order.objects.filter(payment_id=order_id).first()
         user.paid = True
         user.save()
+        cart = Cart.objects.filter(user=request.user).first()
+        if cart:
+            cart.delete()
             
-    return render(request, 'home/thank-you.html',{'order_id':order_id})
+    return render(request, 'home/thank-you.html', {'order_id': order_id})
 
 def profile(request):
     if request.method == 'POST':
@@ -331,3 +355,11 @@ def profile(request):
         user.save()
         return redirect('shop:home')  
     
+def order(request):
+    orders = Order.objects.filter(user=request.user)
+    order_details = OrderDetails.objects.filter(order__in=orders) 
+    context = {
+        'order_details': order_details,
+        'order': orders
+    }
+    return render(request,'home/order.html',context)

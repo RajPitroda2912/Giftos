@@ -32,6 +32,51 @@
   <link href="{% static 'css/style.css' %}" rel="stylesheet" />
   <!-- responsive style -->
   <link href="{% static 'css/responsive.css' %}" rel="stylesheet" />
+  <style>
+    .notifications {
+        position: relative;
+        display: inline-block;
+        margin-right: 20px;
+    }
+    
+    .notification-toggle {
+        color: black;
+        text-decoration: none;
+    }
+    
+    .notification-dropdown {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: white;
+        border: 1px solid #ddd;
+        width: 300px;
+        max-height: 400px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .notification-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+    
+    .badge {
+        background: red;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 5px;
+        font-size: 10px;
+        position: relative;
+        top: -8px;
+        left: -5px;
+    }
+    </style>
 </head>
 
 <body>
@@ -77,8 +122,15 @@
               </a>
               <ul class="dropdown-menu">
                 {% if user.is_authenticated %}
-                  <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileModal" href="#">{{ user.name }}</a></li>
+                  <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileModal" href="#">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+                  </svg>
+                  {{ user.name }}</a>
+                  </li>
                   <li><a class="dropdown-item" href="{% url 'shop:logout' %}">Logout</a></li>
+                  <li><a class="dropdown-item" href="{% url 'shop:order' %}">
+                  <i class="bi bi-bag-check"></i> My Orders</a></li>
                 {% else %}
                   <li><a class="dropdown-item" href="{% url 'shop:login' %}">Login</a></li>
                 {% endif %}
@@ -89,8 +141,10 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h5 class="modal-title" id="profileModalLabel">Modal title</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  <h5 class="modal-title" id="profileModalLabel">Update User Profile</h5>
+                  <button type="button" class="btn-close"  data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
                 </div>
                 <div class="modal-body">
                   <form method="post" action="{% url 'shop:profile' %}">
@@ -124,21 +178,53 @@
             <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search" aria-label="Search">
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
           </form>
-          <div class="user_option">
+            <div class="user_option">
             <a href="{% url 'shop:cart' %}">
-              <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+              <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+              </svg>
+              <i class="bi bi-cart" aria-hidden="true">Cart</i>
             </a>
+            </div>
+            <div class="notifications">
+              <a href="javascript:void(0)" class="notification-toggle">
+                  <i class="fa fa-bell"></i>
+                  <span id="notification-badge" class="badge" style="display: none;">0</span>
+              </a>
+              <div class="notification-dropdown" id="notification-dropdown" style="display: none;">
+                {% for i in notification %}
+                  <div class="notification-header">
+                      <h3></h3>
+                  </div>
+                  <div class="notification-list" id="notification-list">{{i.message}}</div>
+                  {% endfor %}
+              </div>
           </div>
         </div>
       </nav>
     </header>
+    {% if messages %}
+    {% for message in messages %}
+      <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+        <div id="popupToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true" style="background-color: #009c27; color: #ffffff;">
+          <div class="d-flex">
+            <div class="toast-body">
+              <strong>Success:</strong> {{message}}
+            </div>
+            <!-- <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close" style="color: #1e10dd;"><span aria-hidden="true">&times;</span></button> -->
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+
     <!-- end header section -->
         {% block content %}
         
         {% endblock %}
   <!-- info section -->
 
-  <section class="info_section  layout_padding2-top">
+  <section class="info_section  layout_padding2-top" style="border-radius:12px">
     <div class="social_container">
       <div class="social_box">
         <a href="">
@@ -210,11 +296,72 @@
 
   <!-- end info section -->
 
-
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Connect to WebSocket
+        const notificationSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/admin/notifications/'
+        );
+        
+        // Notification dropdown element (you may need to add this to your admin template)
+        const notificationDropdown = document.getElementById('notification-dropdown');
+        const notificationList = document.getElementById('notification-list');
+        const notificationBadge = document.getElementById('notification-badge');
+        
+        notificationSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            
+            // Create new notification item
+            const notificationItem = document.createElement('div');
+            notificationItem.className = 'notification-item';
+            notificationItem.innerHTML = `
+                {% comment %} <strong>${data.type}</strong> {% endcomment %}
+                <p>${data.message}</p>
+                {% comment %} <small>${new Date(data.timestamp).toLocaleString()}</small> {% endcomment %}
+            `;
+            
+            // Add to top of list
+            notificationList.insertBefore(notificationItem, notificationList.firstChild);
+            
+            // Update badge count
+            const currentCount = parseInt(notificationBadge.textContent) || 0;
+            notificationBadge.textContent = currentCount + 1;
+            notificationBadge.style.display = 'inline-block';
+        };
+        
+        notificationSocket.onclose = function(e) {
+            console.error('Notification socket closed unexpectedly');
+        };
+    });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const toggle = document.querySelector('.notification-toggle');
+          const dropdown = document.getElementById('notification-dropdown');
+          
+          toggle.addEventListener('click', function() {
+              dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+              // Reset badge when dropdown is opened
+              if (dropdown.style.display === 'block') {
+                  document.getElementById('notification-badge').style.display = 'none';
+                  document.getElementById('notification-badge').textContent = '0';
+              }
+          });
+      });
+      </script>
   <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
   <script src="{% static 'js/bootstrap.js' %}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
   <script src="{% static 'js/custom.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var toastElement = document.getElementById('popupToast');
+      if (toastElement) {
+        var toast = new bootstrap.Toast(toastElement);
+        toast.show();
+      }
+    });
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
