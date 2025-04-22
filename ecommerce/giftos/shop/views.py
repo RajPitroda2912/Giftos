@@ -301,6 +301,9 @@ def checkout(request):
                 payment_id=order_id
             )
             orders.save()
+            user.address = address
+            user.phone = phone
+            user.save()
 
         for i in cart_items:
             item = OrderDetails(

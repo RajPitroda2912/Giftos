@@ -7,8 +7,7 @@ from .models import *
 
 
 @admin.register(user)
-class userModelAdmin(UserAdmin):
-    model = user
+class userModelAdmin(admin.ModelAdmin):
     list_display = ["name", "email", "created_at", "is_active"]
     list_display_links = ['name','email']
 
